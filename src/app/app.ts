@@ -1,10 +1,10 @@
-import {Component, ViewChild} from "@angular/core";
-import {AlertController, Nav, Platform} from "ionic-angular";
-import {StatusBar} from "@ionic-native/status-bar";
-import {SplashScreen} from "@ionic-native/splash-screen";
-import {Push, PushObject, PushOptions} from "@ionic-native/push";
-import {TabsPage} from "../pages/tabs/tabs";
-import {DetailsPage} from "../pages/details/details";
+import {Component, ViewChild} from '@angular/core';
+import {AlertController, Nav, Platform} from 'ionic-angular';
+import {StatusBar} from '@ionic-native/status-bar';
+import {SplashScreen} from '@ionic-native/splash-screen';
+import {Push, PushObject, PushOptions} from '@ionic-native/push';
+import {TabsPage} from '../pages/tabs/tabs';
+import {DetailsPage} from '../pages/details/details';
 
 @Component({
   template: '<ion-nav [root]="rootPage"></ion-nav>'
@@ -13,11 +13,13 @@ export class Ionic2PushApp {
   @ViewChild(Nav) nav: Nav;
   rootPage: any;
 
-  constructor(public platform: Platform,
-              public statusBar: StatusBar,
-              public splashScreen: SplashScreen,
-              public push: Push,
-              public alertCtrl: AlertController) {
+  constructor(
+    public platform: Platform,
+    public statusBar: StatusBar,
+    public splashScreen: SplashScreen,
+    public push: Push,
+    public alertCtrl: AlertController
+  ) {
     this.rootPage = TabsPage;
     platform.ready().then(() => {
       // Okay, so the platform is ready and our plugins are available.
@@ -30,30 +32,46 @@ export class Ionic2PushApp {
 
   initPushNotification() {
     if (!this.platform.is('cordova')) {
-      console.warn("Push notifications not initialized. Cordova is not available - Run in physical device");
+      console.warn(
+        'Push notifications not initialized. Cordova is not available - ' +
+        'Run in physical device'
+      );
+
       return;
     }
+
     const options: PushOptions = {
       android: {
-        senderID: "YOUR_SENDER_ID"
+        senderID: '723462060250'
       },
       ios: {
-        alert: "true",
+        alert: 'true',
         badge: false,
-        sound: "true"
+        sound: 'true'
       },
       windows: {}
     };
+
     const pushObject: PushObject = this.push.init(options);
 
     pushObject.on('registration').subscribe((data: any) => {
-      console.log("device token ->", data.registrationId);
-      //TODO - send device token to server
+      console.log(JSON.stringify(data));
+      let deviceTokenAlert = this.alertCtrl.create({
+        title: 'Device Token',
+        message: data.registrationId,
+        buttons: [{
+          text: 'Ok',
+          role: 'cancel'
+        }]
+      });
+
+      deviceTokenAlert.present();
+      // TODO - send device token to server
     });
 
     pushObject.on('notification').subscribe((data: any) => {
-      console.log('message', data.message);
-      //if user using app and push notification comes
+      console.log('message', JSON.stringify(data.message));
+      // if user using app and push notification comes
       if (data.additionalData.foreground) {
         // if application open, show popup
         let confirmAlert = this.alertCtrl.create({
@@ -75,11 +93,13 @@ export class Ionic2PushApp {
         //if user NOT using app and push notification comes
         //TODO: Your logic on click of push notification directly
         this.nav.push(DetailsPage, {message: data.message});
-        console.log("Push notification clicked");
+        console.log('Push notification clicked');
       }
     });
 
-    pushObject.on('error').subscribe(error => console.error('Error with Push plugin', error));
+    pushObject.on('error').subscribe(
+      error => console.error('Error with Push plugin', error)
+    );
   }
 }
 
